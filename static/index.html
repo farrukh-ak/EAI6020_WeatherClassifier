@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-upload {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .file-upload:hover {
+            background-color: #0056b3;
+        }
+        #image-preview {
+            margin-top: 20px;
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        #prediction-result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Classification</h1>
+        <label for="file-upload" class="file-upload">
+            Upload an Image
+        </label>
+        <input type="file" id="file-upload" accept="image/*">
+        <div id="image-preview-container">
+            <img id="image-preview" src="#" alt="Image Preview" style="display: none;">
+        </div>
+        <div class="loader" id="loader"></div>
+        <div id="prediction-result"></div>
+    </div>
+
+    <script>
+        document.getElementById('file-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imagePreview = document.getElementById('image-preview');
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    document.getElementById('prediction-result').textContent = '';
+                    document.getElementById('loader').style.display = 'block';
+
+                    // Send the image to the API
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('prediction-result').textContent = `Prediction: ${data.prediction}`;
+                    })
+                    .catch(error => {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('prediction-result').textContent = 'Error: Could not get prediction.';
+                        console.error('Error:', error);
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

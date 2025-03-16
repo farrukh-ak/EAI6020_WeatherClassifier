@@ -1,4 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import uvicorn
 from PIL import Image
 import io
@@ -21,16 +23,19 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
 
-# Define class names (replace with your actual class names)
+# Define class names
 class_names = ['dew', 'fogsmog', 'frost', 'glaze', 'hail', 'lightning', 'rain', 'rainbow', 'rime', 'sandstorm', 'snow']
 
 # Create FastAPI app
 app = FastAPI()
 
+# Serve static files (e.g., index.html)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Root endpoint
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Weather Classification API! Use the /predict endpoint to classify images."}
+    return FileResponse("static/index.html")
 
 # Prediction endpoint (POST method)
 @app.post("/predict")
